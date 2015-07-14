@@ -1,0 +1,104 @@
+---
+title: "Moose Hub"
+date: "Generated: `r Sys.Date()`"
+runtime: shiny
+output:
+    html_document:
+        toc: true
+        toc_depth: 3
+        theme: spacelab
+        highlight: zenburn
+        number_sections: false
+---
+
+```{r global_opts, include=FALSE}
+
+knitr::opts_chunk$set(fig.path="Figs", echo=FALSE, warning=FALSE,
+                      message=FALSE, dev='svg')
+
+```
+
+## Update
+Use this to update this document to the newest version.
+
+  ```{r update_main}
+actionButton("updateThis", "Update this document")
+observeEvent(input$updateThis, {
+    system("git pull")
+})
+```
+
+## Setup
+Download and update other repositories.
+
+```{r main_setup}
+source("helpers.R")
+vals <- reactiveValues()
+
+## Tracked repos
+vals$repos <- unname(unlist(read.table("etc/repos.txt", strings=F)))
+datahub <- "treedata"
+
+repoUI <- renderUI({
+    inputPanel(
+        checkboxInput("downloadData", "Download/Update Data"),
+        checkboxGroupInput("downloadRepos", "Tracked Repositories", choices=vals$repos),
+        textInput("downloadOther", "Download Other:"),
+        actionButton("download", "Download")
+    )
+})
+
+repoUI
+
+observeEvent(
+    input$download, {
+        progress <- shiny::Progress$new()
+        on.exit(progress$close())
+        progress$set(message = "Downloading", value=0)
+        
+        selected <- c()
+        if (input$downloadData) selected <- datahub
+        selected <- c(selected, input$downloadRepos)
+        if (length(input$dowloadOther>0)) 
+            selected <- c(selected, input$downloadOther)
+        n <- length(selected)
+        
+        for (i in 1:n) {
+            progress$set(detail = sprintf("Downloading %s", selected[i]))
+            response <- github(selected[i])
+            progress$inc(1/n, detail = sprintf("%s: %s", selected[i], response))
+            Sys.sleep(0.1)
+        }
+    }
+)
+
+```
+
+Add another repository to the list of tracked repositories
+
+```{r update_tracked}
+inputPanel(
+    textInput("newTracked", "New repo:"),
+    actionButton("addTracked", "Add")
+)
+
+observeEvent(input$addTracked, {
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message="Adding", value=0)
+
+    print(nchar(input$newTracked))
+    if (input$newTracked %in% vals$repos) {
+        response <- sprintf("%s already in tracked repositories.", input$newTracked)
+    } else if (nchar(input$newTracked) < 1) {
+        response <- sprintf("Must enter a name.")
+    } else {
+        vals$repos <- c(vals$repos, input$newTracked)
+        write(vals$repos, "etc/repos.txt", sep="\n")
+        response <- sprintf("%s added.", input$newTracked)
+    }
+    progress$set(detail = response)
+    Sys.sleep(1)
+})
+
+```
