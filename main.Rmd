@@ -32,7 +32,7 @@ observeEvent(input$updateThis, {
 Download and update other repositories.
 
 ```{r main_setup}
-source("helpers.R")
+source("R/helpers.R")
 vals <- reactiveValues()
 
 ## Tracked repos
@@ -102,3 +102,22 @@ observeEvent(input$addTracked, {
 })
 
 ```
+
+```{r temp}
+
+shinyApp(
+    shinyUI(
+        mainPanel(
+            h3("This is my app!\n\n"),
+            br(),
+            br(),
+            h4("Download your data using the choose file button\n\n"),
+            h4("Thank you for using the app!")
+        )
+    ),
+    shinyServer(function(input, output, session) {
+
+    })
+)
+```
+
