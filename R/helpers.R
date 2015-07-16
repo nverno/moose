@@ -3,7 +3,7 @@
 ## Description: 
 ## Author: Noah Peart
 ## Created: Mon Jul 13 21:54:11 2015 (-0400)
-## Last-Updated: Wed Jul 15 14:40:47 2015 (-0400)
+## Last-Updated: Wed Jul 15 21:22:18 2015 (-0400)
 ##           By: Noah Peart
 ######################################################################
 
@@ -20,7 +20,8 @@ github <- function(repo, name="nverno") {
 }
 
 ## Find .Rmd documents
-findRmds <- function() {
-
+findRmds <- function(folders) {
+    res <- sapply(folders, list.files, full=T, recursive=T, pattern="\\.[R]md")
+    res[lengths(res) > 0]
 }
 

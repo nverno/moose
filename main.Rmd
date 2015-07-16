@@ -18,7 +18,34 @@ knitr::opts_chunk$set(fig.path="Figs", echo=FALSE, warning=FALSE,
 
 ```
 
-## Update
+```{r setup}
+source("R/helpers.R")
+vals <- reactiveValues()
+
+## Tracked repos
+vals$repos <- unname(unlist(read.table("etc/repos.txt", strings=F)))
+datahub <- "treedata"
+
+```
+
+## Interactive Docs
+
+```{r interactive_docs}
+vals$docs <- findRmds(vals$repos)
+
+docsUI <- renderUI({
+    
+    mainPanel(
+        
+    )
+    
+})
+
+```
+
+## Maintanence
+
+### Update Moose
 Use this to update this document to the newest version.
 
   ```{r update_main}
@@ -28,17 +55,10 @@ observeEvent(input$updateThis, {
 })
 ```
 
-## Setup
+### Download/Update Repos
 Download and update other repositories.
 
-```{r main_setup}
-source("R/helpers.R")
-vals <- reactiveValues()
-
-## Tracked repos
-vals$repos <- unname(unlist(read.table("etc/repos.txt", strings=F)))
-datahub <- "treedata"
-
+```{r download_repos}
 repoUI <- renderUI({
     inputPanel(
         checkboxInput("downloadData", "Download/Update Data"),
@@ -104,8 +124,7 @@ observeEvent(input$addTracked, {
 ```
 
 ```{r temp}
-library(knitr)
-knit('hazards/interact/test.Rmd', tangle=T)
+
 shinyApp(
     shinyUI(
         mainPanel(
