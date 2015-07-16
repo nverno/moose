@@ -104,7 +104,8 @@ observeEvent(input$addTracked, {
 ```
 
 ```{r temp}
-
+library(knitr)
+knit('hazards/interact/test.Rmd', tangle=T)
 shinyApp(
     shinyUI(
         mainPanel(
