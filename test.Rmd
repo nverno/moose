@@ -1,0 +1,42 @@
+---
+runtime: shiny
+---
+
+### This works, but not reactive
+[other](other.Rmd)
+
+```{r}
+vals <- reactiveValues(rmds="other.Rmd")
+
+ui <- renderUI({
+    list(
+        selectInput("doc", "Document", vals$rmds),
+        actionButton("go", "Go")
+    )
+})
+
+ui
+
+## Doesn't work
+observeEvent(input$go, {
+    rmarkdown::run(input$doc)
+})
+
+source("R/run.R")
+```
+
+```{r}
+
+## Doesn't work
+shinyApp(
+    shinyUI(
+        htmlOutput("links")
+    ),
+    shinyServer(function(input, output, session) {
+        output$links <- renderUI({
+            tags$a(href=vals$rmds, vals$rmds)
+        })
+    })
+)
+
+```

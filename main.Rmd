@@ -32,29 +32,43 @@ datahub <- "treedata"
 
 ## Interactive Docs
 
+```{r}
+includeMarkdown("test.Rmd")
+
+```
+
 ```{r interactive_docs}
+
 observeEvent(vals$repos, {
     vals$docs <- findRmds(vals$repos)
     vals$links <- lapply(vals$docs, function(folder)
         lapply(folder, function(doc)
             tags$a(href=doc, doc)) )
 })
-
+    
 shinyApp(
     shinyUI(fluidPage(
         uiOutput("docsUI"),
-        htmlOutput("help"),
+        uiOutput("help"),
         helpText("Interactive Documents:"), 
         htmlOutput("rmds"),
         uiOutput("docs")
     )),
     shinyServer(function(input, output, session) {
+        ## output$help <- renderUI({
+        ##     addResourcePath(input$project, input$project)
+        ## tags$iframe(
+        ##     seamless=NA,
+        ##     width="800px",
+        ##     src=sprintf("%s/interact/info.html", input$project)
+        ## )
+        ## includeMarkdown(sprintf("%s/interact/info.Rmd", "hazards"))
+        ## })
         output$help <- renderUI({
-            addResourcePath(input$project, input$project)
-            tags$iframe(
-                seamless=NA,
-                width="800px",
-                src=sprintf("%s/interact/info.html", input$project)
+            list(
+                h1("Project Information"),
+                hr(),
+                includeMarkdown(sprintf("%s/interact/info.Rmd", input$project))
             )
         })
         output$docsUI <- renderUI({
@@ -74,6 +88,7 @@ shinyApp(
 
     })
 )
+
 ```
 
 -----------------
