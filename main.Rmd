@@ -55,15 +55,6 @@ shinyApp(
         uiOutput("docs")
     )),
     shinyServer(function(input, output, session) {
-        ## output$help <- renderUI({
-        ##     addResourcePath(input$project, input$project)
-        ## tags$iframe(
-        ##     seamless=NA,
-        ##     width="800px",
-        ##     src=sprintf("%s/interact/info.html", input$project)
-        ## )
-        ## includeMarkdown(sprintf("%s/interact/info.Rmd", "hazards"))
-        ## })
         output$help <- renderUI({
             list(
                 h1("Project Information"),

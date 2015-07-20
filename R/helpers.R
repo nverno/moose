@@ -3,7 +3,7 @@
 ## Description: 
 ## Author: Noah Peart
 ## Created: Mon Jul 13 21:54:11 2015 (-0400)
-## Last-Updated: Fri Jul 17 17:19:06 2015 (-0400)
+## Last-Updated: Sat Jul 18 13:16:58 2015 (-0400)
 ##           By: Noah Peart
 ######################################################################
 
@@ -25,3 +25,7 @@ findRmds <- function(folders) {
     res[lengths(res) > 0]
 }
 
+## ## search helpdocs
+## findDocs <- function(folders) {
+##     res <- lapply(folders,)
+## }
