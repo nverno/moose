@@ -33,7 +33,7 @@ datahub <- "treedata"
 ## Interactive Docs
 
 ```{r}
-includeMarkdown("test.Rmd")
+## includeMarkdown("test.Rmd")
 
 ```
 
@@ -49,10 +49,10 @@ observeEvent(vals$repos, {
 shinyApp(
     shinyUI(fluidPage(
         uiOutput("docsUI"),
-        uiOutput("help"),
+        ## uiOutput("help"),
         helpText("Interactive Documents:"), 
         htmlOutput("rmds"),
-        uiOutput("docs")
+        ## uiOutput("docs")
     )),
     shinyServer(function(input, output, session) {
         output$help <- renderUI({
@@ -170,21 +170,21 @@ observeEvent(input$addTracked, {
 ```
 
 ```{r temp}
-library(shiny)
-shinyApp(
-  shinyUI(fluidPage(
-    selectInput('website', 'Choose a website'
-                , list(bbc = "http://www.bbc.co.uk"
-                       , google = "http://www.google.com"
-                       , cnn = "http://www.cnn.com")
-    )
-                , htmlOutput("mySite")
-    ))
-  ,shinyServer(function(input, output, session){
-    output$mySite <- renderUI({
-      tags$a(href = input$website, input$website)
-    })
-  })
-)
+## library(shiny)
+## shinyApp(
+##   shinyUI(fluidPage(
+##     selectInput('website', 'Choose a website'
+##                 , list(bbc = "http://www.bbc.co.uk"
+##                        , google = "http://www.google.com"
+##                        , cnn = "http://www.cnn.com")
+##     )
+##                 , htmlOutput("mySite")
+##     ))
+##   ,shinyServer(function(input, output, session){
+##     output$mySite <- renderUI({
+##       tags$a(href = input$website, input$website)
+##     })
+##   })
+## )
 
 ```
