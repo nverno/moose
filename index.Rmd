@@ -1,0 +1,230 @@
+---
+title: "Moose Hub"
+date: "Generated: `r Sys.Date()`"
+runtime: shiny
+output:
+    html_document:
+        toc: true
+        toc_depth: 3
+        theme: spacelab
+        highlight: zenburn
+        number_sections: false
+params:
+    base: .
+
+---
+
+```{r global_opts, include=FALSE}
+
+knitr::opts_chunk$set(fig.path="Figs", echo=FALSE, warning=FALSE,
+                      message=FALSE, dev='svg')
+
+```
+
+```{r setup}
+source("R/helpers.R")
+vals <- reactiveValues()
+vals$port <- 1000
+
+## Tracked repos
+repos <- unname(unlist(read.table("etc/repos.txt", strings=F)))
+vals$repos <- repos
+vals$brepos <- file.path(params$base, repos)
+datahub <- file.path(params$base, "treedata")
+run <- file.path(params$base, "R/run.R")
+
+```
+
+-------------------
+
+## Interactive Docs
+
+```{r}
+## includeMarkdown("test.Rmd")
+
+```
+
+```{r interactive_docs}
+
+observeEvent(vals$brepos, {
+    vals$docs <- findRmds(vals$brepos)
+    ## vals$docnames <- lapply(vals$docs, 
+    vals$links <- lapply(vals$docs, function(folder)
+        lapply(folder, function(doc)
+            tags$a(href=doc, doc)) )
+})
+
+docsUI <- renderUI({
+    radioButtons("project", "Project", names(vals$docs), inline=T)
+})
+
+docs <- renderUI({
+    radioButtons("doc", "Document:", choices=vals$docs[[input$project]], inline=T)
+})
+
+rmds <- renderUI({
+    print(vals$links)
+    vals$links[input$project]
+})
+
+docsUI
+docs
+actionButton("go", "Go")
+
+observeEvent(input$go,{ 
+    vals$port <- vals$port + 1
+    path <- normalizePath(input$doc)
+    ## print(sprintf("Rscript %s -e -p %s %s", run, vals$port, path))
+    system(sprintf("Rscript %s -e -p %s %s", run, vals$port, path), wait=F)
+    ## findRmds(vals$repos)
+})
+
+## shinyApp(
+##     shinyUI(fluidPage(
+##         uiOutput("docsUI"),
+##         ## uiOutput("help"),
+##         helpText("Interactive Documents:"), 
+##         ## htmlOutput("rmds"),
+##         uiOutput("docs"),
+##         textOutput("test"),
+##         actionButton("go", "Go!")
+##     )),
+##     shinyServer(function(input, output, session) {
+##         ## output$help <- renderUI({
+##         ##     list(
+##         ##         h1("Project Information"),
+##         ##         hr(),
+##         ##         includeMarkdown(sprintf("%s/interact/info.Rmd", input$project))
+##         ##     )
+##         ## })
+##         output$docsUI <- renderUI({
+##             radioButtons("project", "Project", names(vals$docs), inline=T)
+##         })
+##         ## output$rmds <- renderUI({
+##         ##     vals$links[input$project]
+##         ## })
+##         output$docs <- renderUI({
+##             radioButtons("doc", "Document:", basename(vals$docs[[input$project]]), inline=T)
+##         })
+
+##         observeEvent(input$go, {
+##             print(sprintf("Rscript %s -e C:\\home\\work\\hazards\\interact\\hazards.Rmd", run))
+##             system(sprintf("Rscript %s -e C:/home/work/hazards/interact/hazards.Rmd", run))
+##             ## findRmds(vals$repos)
+##         })
+##         ## Run document
+##         ## observeEvent(input$doc, {
+##         ##     rmarkdown::run(input$doc)
+##         ## })
+
+##     })
+## )
+
+```
+
+-----------------
+
+## Maintanence
+
+### Update Moose
+Use this to update this document to the newest version.
+
+```{r update_main}
+actionButton("updateThis", "Update this document")
+observeEvent(input$updateThis, {
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message="Updating", value=0)
+    
+    response <- system("git pull", inter=T)
+    progress$set(detail=response)
+    Sys.sleep(0.3)
+})
+```
+
+### Download/Update Repos
+Download and update other repositories.
+
+```{r download_repos}
+repoUI <- renderUI({
+    inputPanel(
+        checkboxInput("downloadData", "Download/Update Data"),
+        checkboxGroupInput("downloadRepos", "Tracked Repositories", choices=vals$repos),
+        textInput("downloadOther", "Download Other:"),
+        actionButton("download", "Download")
+    )
+})
+
+repoUI
+
+observeEvent(
+    input$download, {
+        progress <- shiny::Progress$new()
+        on.exit(progress$close())
+        progress$set(message = "Downloading", value=0)
+        
+        selected <- c()
+        if (input$downloadData) selected <- datahub
+        selected <- c(selected, input$downloadRepos)
+        if (length(input$dowloadOther>0)) 
+            selected <- c(selected, input$downloadOther)
+        n <- length(selected)
+        
+        for (i in 1:n) {
+            progress$set(detail = sprintf("Downloading %s", selected[i]))
+            response <- github(selected[i])
+            progress$inc(1/n, detail = sprintf("%s: %s", selected[i], response))
+            Sys.sleep(0.1)
+        }
+    }
+)
+
+```
+
+Add another repository to the list of tracked repositories
+
+```{r update_tracked}
+inputPanel(
+    textInput("newTracked", "New repo:"),
+    actionButton("addTracked", "Add")
+)
+
+observeEvent(input$addTracked, {
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message="Adding", value=0)
+
+    if (input$newTracked %in% vals$repos) {
+        response <- sprintf("%s already in tracked repositories.", input$newTracked)
+    } else if (nchar(input$newTracked) < 1) {
+        response <- sprintf("Must enter a name.")
+    } else {
+        vals$repos <- c(vals$repos, input$newTracked)
+        write(vals$repos, "etc/repos.txt", sep="\n")
+        response <- sprintf("%s added.", input$newTracked)
+    }
+    progress$set(detail = response)
+    Sys.sleep(1)
+})
+
+```
+
+```{r temp}
+## library(shiny)
+## shinyApp(
+##   shinyUI(fluidPage(
+##     selectInput('website', 'Choose a website'
+##                 , list(bbc = "http://www.bbc.co.uk"
+##                        , google = "http://www.google.com"
+##                        , cnn = "http://www.cnn.com")
+##     )
+##                 , htmlOutput("mySite")
+##     ))
+##   ,shinyServer(function(input, output, session){
+##     output$mySite <- renderUI({
+##       tags$a(href = input$website, input$website)
+##     })
+##   })
+## )
+
+```
