@@ -25,10 +25,13 @@ knitr::opts_chunk$set(fig.path="Figs", echo=FALSE, warning=FALSE,
 source("R/helpers.R")
 vals <- reactiveValues()
 vals$port <- 1000
+base <- params$base  # make it visible in shiny renders (not sure why this is needed?)
 
 ## Tracked repos
 repos <- unname(unlist(read.table("etc/repos.txt", strings=F)))
 vals$repos <- repos
+
+## File paths
 vals$brepos <- file.path(params$base, repos)
 datahub <- file.path(params$base, "treedata")
 run <- file.path(params$base, "R/run.R")
@@ -39,34 +42,30 @@ run <- file.path(params$base, "R/run.R")
 
 ## Interactive Docs
 
-```{r}
-## includeMarkdown("test.Rmd")
-
-```
-
 ```{r interactive_docs}
 
 observeEvent(vals$brepos, {
     vals$docs <- findRmds(vals$brepos)
-    ## vals$docnames <- lapply(vals$docs, 
-    vals$links <- lapply(vals$docs, function(folder)
-        lapply(folder, function(doc)
-            tags$a(href=doc, doc)) )
+    vals$docs <- lapply(vals$docs, function(x) setNames(x, basename(x)))
+    ## vals$links <- lapply(vals$docs, function(folder)
+    ##     lapply(folder, function(doc)
+    ##         tags$a(href=doc, doc)) )
 })
 
 docsUI <- renderUI({
-    radioButtons("project", "Project", names(vals$docs), inline=T)
+    radioButtons("project", "Project", basename(names(vals$docs)), inline=T)
 })
 
 docs <- renderUI({
-    radioButtons("doc", "Document:", choices=vals$docs[[input$project]], inline=T)
+    radioButtons("doc", "Document:", choices=vals$docs[[file.path(base,input$project)]], inline=T)
 })
 
-rmds <- renderUI({
-    print(vals$links)
-    vals$links[input$project]
-})
+## rmds <- renderUI({
+##     print(vals$links)
+##     vals$links[input$project]
+## })
 
+## Create interface
 docsUI
 docs
 actionButton("go", "Go")
@@ -74,9 +73,7 @@ actionButton("go", "Go")
 observeEvent(input$go,{ 
     vals$port <- vals$port + 1
     path <- normalizePath(input$doc)
-    ## print(sprintf("Rscript %s -e -p %s %s", run, vals$port, path))
     system(sprintf("Rscript %s -e -p %s %s", run, vals$port, path), wait=F)
-    ## findRmds(vals$repos)
 })
 
 ## shinyApp(

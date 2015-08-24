@@ -1,14 +1,14 @@
 #!/usr/bin/Rscript
 
 library(methods)
-library(docopt)
+if (!require(docopt)) install.packages("docopt")
 
 'usage: run.R [-e -p <port>] FILE
 options:
- -e  Execute
- -p port [default: 7088]
+ -e       Execute
+ -p port  [default: 7088]
 Arguments:
- FILE  target RMD file' -> doc
+ FILE     target RMD file' -> doc
 
 opts <- docopt(doc)
 str(opts)
@@ -19,12 +19,12 @@ if (opts$e) {
         default_file = basename(opts$FILE),
         ## dir = dirname(opts$FILE),
         shiny_args = list(
-            port = as.numeric(opts$port), 
+            port = as.numeric(opts$p), 
             launch.browser = TRUE,
             host = "127.0.0.1"),
         render_args = list(params=list(base=dirname(opts$FILE)))
     )
-} else print ("no")
+} else print ("not executed -- opening not implemented yet")
 
 
 ## This
