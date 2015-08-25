@@ -1,7 +1,7 @@
 #!/usr/bin/Rscript
 
 library(methods)
-if (!require(docopt)) install.packages("docopt")
+if (!require(docopt)) install.packages("docopt", repos="http://ftp.ussg.iu.edu/CRAN/")
 
 'usage: run.R [-e -p <port>] FILE
 options:
@@ -11,7 +11,7 @@ Arguments:
  FILE     target RMD file' -> doc
 
 opts <- docopt(doc)
-str(opts)
+## str(opts)
 
 if (opts$e) {
     rmarkdown::run(
