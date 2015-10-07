@@ -7,3 +7,4 @@ neighborhoods
 nbrs3d
 test
 vector_growth
+plotstats

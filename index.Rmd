@@ -133,7 +133,7 @@ observeEvent(input$updateThis, {
     on.exit(progress$close())
     progress$set(message="Updating", value=0)
     
-    response <- system("git pull", inter=T)
+    response <- system("git pull", intern=TRUE)
     progress$set(detail=response)
     Sys.sleep(0.3)
 })
